@@ -1,0 +1,63 @@
+pipeline {
+    agent any
+
+    environment {
+        // Environment variables can be set here
+        APP_NAME = 'my-app'
+        BUILD_DIR = 'build'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout the code from the repository
+                git 'https://github.com/your-repo/my-app.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                // Install dependencies and build the app
+                script {
+                    // For example, if it's a Node.js app
+                    sh 'npm install'
+                    sh 'npm run build'
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                // Run tests
+                script {
+                    sh 'npm test'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                // Deploy the app (e.g., to a staging environment)
+                script {
+                    // For example, using SSH or Docker for deployment
+                    sh './deploy.sh'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Cleanup actions (e.g., delete temporary files)
+            cleanWs()
+        }
+        success {
+            // Actions on success (e.g., notify team)
+            echo 'Build and deployment succeeded!'
+        }
+        failure {
+            // Actions on failure (e.g., notify team)
+            echo 'Build failed. Please check the logs.'
+        }
+    }
+}
