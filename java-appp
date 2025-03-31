@@ -1,0 +1,76 @@
+pipeline {
+    agent any
+
+    environment {
+        // Environment variables
+        APP_NAME = 'my-java-app'
+        MAVEN_HOME = '/usr/local/maven' // Adjust to your Maven installation path
+    }
+
+    tools {
+        // Specify tools (Maven, JDK) to use for the pipeline
+        maven 'Maven3'  // This should match the tool name defined in Jenkins global configurations
+        jdk 'JDK11'     // This should match the JDK tool configured in Jenkins
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout the code from the repository
+                git 'https://github.com/your-repo/my-java-app.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                // Clean and compile the project using Maven
+                script {
+                    sh "${MAVEN_HOME}/bin/mvn clean install -DskipTests"
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                // Run the unit tests using Maven
+                script {
+                    sh "${MAVEN_HOME}/bin/mvn test"
+                }
+            }
+        }
+
+        stage('Package') {
+            steps {
+                // Package the app (e.g., generate a .jar or .war file)
+                script {
+                    sh "${MAVEN_HOME}/bin/mvn package"
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                // Deploy to a staging server or any other deployment environment
+                script {
+                    // Example deployment (can be customized to your needs)
+                    sh 'scp target/my-java-app.jar user@staging-server:/path/to/deploy'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Clean workspace after build (e.g., remove temporary files)
+            cleanWs()
+        }
+        success {
+            // Notify success, can also send notifications like emails or Slack messages
+            echo 'Build and deployment succeeded!'
+        }
+        failure {
+            // Notify failure, can be used to alert team via email or other methods
+            echo 'Build failed. Please check the logs.'
+        }
+    }
+}
